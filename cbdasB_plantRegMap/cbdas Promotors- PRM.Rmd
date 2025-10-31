@@ -1,0 +1,211 @@
+---
+title: "cbdas Promotors - PRM"
+author: "Saša Cej"
+date: "2025-10-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+setwd("C:/Users/scej4/OneDrive/Desktop/diplomska_koda/cbdasB_plantRegMap")
+
+library(ComplexUpset)
+library(UpSetR)
+library(dplyr)
+library(tidyr)
+
+```
+
+
+Uporabljene sekvence so tu le 2000bp pred genom oz. promotorska regija 
+
+```{r}
+motif_list <- list(
+  abacusM = abacus$V1,
+  anc1M = anc1$V1,
+  anc2M = anc2$V1,
+  cannatonicM = cannatonic$V1,
+  cannbioM = cannbio$V1,
+  CPM = CP$V1,
+  finolaM = finola$V1,
+  hOG1M = hOG1$V1,
+  hOG2M = hOG2$V1,
+  JLM = JL$V1,
+  JL5M = JL5$V1,
+  JLdashM = JLdash$V1,
+  JLmotherM = JLmother$V1,
+  JLfatherM = JLfather$V1,
+  PbananaM = Pbanana$V1,
+  PKushM = PKush$V1,
+  PpepperM = Ppepper$V1,
+  PRM = PR$V1,
+  SL1M = SL1$V1,
+  SL2M = SL2$V1,
+  travisCBD1M = travisCBD1$V1,
+  travisCBD2M = travisCBD2$V1
+)
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+upset(fromList(motif_list), 
+      nsets = 22, 
+      order.by = "freq", 
+      text.scale = 0.6)
+```
+
+
+```{r}
+```
+
+
+```{r}
+
+
+motif_plus_list <- list(
+  abacusP = abacus$V1,
+  SL2P = SL2$V1,
+  finolaP = finola$V1,
+  PKushP = PKush$V1,
+  JLdashP = JLdash$V1,
+  JL5P = JL5$V1,
+  PbananaP = Pbanana$V1
+)
+
+motif_minus_list <- list(
+  anc1M = anc1$V1,
+  anc2M = anc2$V1,
+  cannatonicM = cannatonic$V1,
+  cannbioM = cannbio$V1,
+  CPM = CP$V1,
+  hOG1M = hOG1$V1,
+  hOG2M = hOG2$V1,
+  JLM = JL$V1,
+  JLmotherM = JLmother$V1,
+  JLfatherM = JLfather$V1,
+  PpepperM = Ppepper$V1,
+  PRM = PR$V1,
+  SL1M = SL1$V1,
+  travisCBD1M = travisCBD1$V1,
+  travisCBD2M = travisCBD2$V1
+)
+
+
+```
+
+
+_______________________________________________________________________________________________________________
+
+HEATMAP - Minus strand
+
+
+```{r}
+
+combined_minus <- bind_rows(
+   anc1 %>% mutate(Plant = "anc1"),
+   anc2 %>% mutate(Plant = "anc2"),
+   cannatonic %>% mutate(Plant = "cannatonic"),
+   cannbio %>% mutate(Plant = "cannbio"),
+   CP %>% mutate(Plant = "CP"),
+   hOG1 %>% mutate(Plant = "hOG1"),
+   hOG2 %>% mutate(Plant = "hOG2"),
+   JL %>% mutate(Plant = "JL"),
+   Ppepper %>% mutate(Plant = "Ppepper"),
+   PR %>% mutate(Plant = "PR"),
+   SL1 %>% mutate(Plant = "SL1"),
+   travisCBD1 %>% mutate(Plant = "t1"),
+   travisCBD2 %>% mutate(Plant = "t2"),
+)
+
+```
+
+```{r}
+
+minus_presence_matrix <- combined_minus %>%
+  distinct(Plant, V1) %>%
+  mutate(value = 1) %>%
+  pivot_wider(names_from = Plant, values_from = value, values_fill = 0) %>% 
+  pivot_longer(-V1, names_to = "Plant", values_to = "Present")
+
+```
+
+
+
+
+```{r}
+
+n_rows_minus <- length(unique(minus_presence_matrix$V1))
+
+height_minus <- max(6, n_rows * 0.15)  
+
+heatmap_minus <- 
+  ggplot(minus_presence_matrix, aes(x = Plant, y = V1, fill = factor(Present))) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("0" = "white", "1" = "darkgreen")) +
+  theme_minimal() +
+  labs(fill = "Present", 
+       title = "Predicted TF binding sites presence across different Cannabis S. cultivars - minus strand") +
+  theme(axis.text.y = element_text(size = 6, angle = 45, lineheight = 1.2),
+        axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+
+ggsave("heatmap_minus2.png", plot = heatmap_minus, width = 8, height = height_minus, dpi = 300, bg = "white")
+
+```
+
+
+_______________________________________________________________________________________________________________
+
+HEATMAP - Plus strand
+
+```{r}
+
+combined_plus <- bind_rows(
+  abacus %>% mutate(Plant = "abacus"),
+  SL2 %>% mutate(Plant = "SL2"),
+  finola %>% mutate(Plant = "finola"),
+  PKush %>% mutate(Plant = "PKush"),
+  JLdash %>% mutate(Plant = "JLdash"),
+  Pbanana %>% mutate(Plant = "Pbanana"),
+)
+
+```
+
+```{r}
+
+plus_presence_matrix <- combined_plus %>%
+  distinct(Plant, V1) %>%
+  mutate(value = 1) %>%
+  pivot_wider(names_from = Plant, values_from = value, values_fill = 0) %>% 
+  pivot_longer(-V1, names_to = "Plant", values_to = "Present")
+
+```
+
+
+
+```{r}
+
+n_rows_plus <- length(unique(plus_presence_matrix$V1))
+
+height_plus <- max(6, n_rows_plus * 0.15)  
+
+heatmap_plus <- 
+  ggplot(plus_presence_matrix, aes(x = Plant, y = V1, fill = factor(Present))) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("0" = "white", "1" = "darkgreen")) +
+  theme_minimal() +
+  labs(fill = "Present", 
+       title = "Predicted TF binding sites presence across different Cannabis S. cultivars - plus strand") +
+  theme(axis.text.y = element_text(size = 6, angle = 45, lineheight = 1.2),
+        axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+
+ggsave("heatmap_plus.png", plot = heatmap_plus, width = 8, height = height_minus, dpi = 300, bg = "white")
+
+```
+
+
