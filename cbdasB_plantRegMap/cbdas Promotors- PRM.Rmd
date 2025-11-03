@@ -18,7 +18,12 @@ library(tidyr)
 ```
 
 
+
+_______________________________________________________________________________________________________________
+
 Uporabljene sekvence so tu le 2000bp pred genom oz. promotorska regija 
+
+BINDING SITE PREDICTION
 
 ```{r}
 motif_list <- list(
@@ -49,8 +54,6 @@ motif_list <- list(
 ```
 
 
-```{r}
-```
 
 
 ```{r}
@@ -61,8 +64,6 @@ upset(fromList(motif_list),
 ```
 
 
-```{r}
-```
 
 
 ```{r}
@@ -108,19 +109,18 @@ HEATMAP - Minus strand
 ```{r}
 
 combined_minus <- bind_rows(
-   anc1 %>% mutate(Plant = "anc1"),
-   anc2 %>% mutate(Plant = "anc2"),
-   cannatonic %>% mutate(Plant = "cannatonic"),
-   cannbio %>% mutate(Plant = "cannbio"),
-   CP %>% mutate(Plant = "CP"),
-   hOG1 %>% mutate(Plant = "hOG1"),
-   hOG2 %>% mutate(Plant = "hOG2"),
-   JL %>% mutate(Plant = "JL"),
-   Ppepper %>% mutate(Plant = "Ppepper"),
-   PR %>% mutate(Plant = "PR"),
-   SL1 %>% mutate(Plant = "SL1"),
-   travisCBD1 %>% mutate(Plant = "t1"),
-   travisCBD2 %>% mutate(Plant = "t2"),
+   anc1 %>% mutate(Cultivar = "anc1"),
+   anc2 %>% mutate(Cultivar = "anc2"),
+   cannatonic %>% mutate(Cultivar = "cannatonic"),
+   cannbio %>% mutate(Cultivar = "cannbio"),
+   CP %>% mutate(Cultivar = "CP"),
+   hOG1 %>% mutate(Cultivar = "hOG1"),
+   hOG2 %>% mutate(Cultivar = "hOG2"),
+   JL %>% mutate(Cultivar = "JL"),
+   Ppepper %>% mutate(Cultivar = "Ppepper"),
+   PR %>% mutate(Cultivar = "PR"),
+   SL1 %>% mutate(Cultivar = "SL1"),
+   travisCBD2 %>% mutate(Cultivar = "t2"),
 )
 
 ```
@@ -208,4 +208,98 @@ ggsave("heatmap_plus.png", plot = heatmap_plus, width = 8, height = height_minus
 
 ```
 
+
+_______________________________________________________________________________________________________________
+
+
+HEATMAP - both strands
+
+```{r}
+
+presence_matrix_both <- union(minus_presence_matrix, plus_presence_matrix)
+  
+```
+
+```{r}
+n_rows_both_strands <- length(unique(presence_matrix_both$V1))
+
+height_both <- max(6, n_rows_both_strands * 0.15)  
+
+heatmap_both <- 
+  ggplot(presence_matrix_both, aes(x = Plant, y = V1, fill = factor(Present))) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("0" = "white", "1" = "darkgreen")) +
+  theme_minimal() +
+  labs(fill = "Present", 
+       title = "Predicted TF binding sites presence across different Cannabis S. cultivars - both strands") +
+  theme(axis.text.y = element_text(size = 6, angle = 45, lineheight = 1.2),
+        axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+
+ggsave("heatmap_both_strands.png", plot = heatmap_both, width = 8, height = height_both, dpi = 300, bg = "white")
+```
+
+
+
+_______________________________________________________________________________________________________________
+
+REGULATION PREDICTION + BINDING SITE PREDICTION - samo s promotorjem (2000bp pred genom)
+
+
+
+Minus strand
+
+```{r}
+
+colnames(minus_presence_matrix)[2] <- "Cultivar"
+
+minus_combined_reg_binding_matrix <- intersect(minus_presence_matrix, minus_reg_presence_matrix) 
+
+```
+
+
+```{r}
+heatmap_minus_reg_binding_combined <- 
+  ggplot(minus_combined_reg_binding_matrix, aes(x = Cultivar, y = V1, fill = factor(Present))) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("0" = "white", "1" = "darkgreen")) +
+  theme_minimal() +
+  labs(fill = "Present", 
+       title = "Predicted Binding + Regulatory sites presence across different C. Sativa cultivars (cbdas) - minus st.") + 
+  theme(axis.text.y = element_text(size = 6, angle = 45, lineheight = 1.2),
+       axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+
+print(heatmap_minus_reg_binding_combined)
+
+ggsave("heatmap_minus_reg_binding_combined.png", plot = heatmap_minus_reg_binding_combined, width = 10, 
+       height = max(6, length(unique(minus_combined_reg_binding_matrix$V1)) * 0.15), 
+       dpi = 300, bg = "white")
+```
+
+
+Plus strand
+
+```{r}
+
+colnames(plus_presence_matrix)[2] <- "Cultivar"
+
+  
+
+heatmap_plus_reg_binding_combined <- 
+  intersect(plus_presence_matrix, plus_reg_presence_matrix) %>% 
+  ggplot(., aes(x = Cultivar, y = V1, fill = factor(Present))) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("0" = "white", "1" = "darkgreen")) +
+  theme_minimal() +
+  labs(fill = "Present", 
+       title = "Predicted Binding + Regulatory sites presence across different C. Sativa cultivars (cbdas) - plus st.") + 
+  theme(axis.text.y = element_text(size = 6, angle = 45, lineheight = 1.2),
+       axis.text.x = element_text(size = 8, angle = 45, hjust = 1)) 
+
+print(heatmap_plus_reg_binding_combined)
+
+ggsave("heatmap_plus_reg_binding_combined.png", plot = heatmap_plus_reg_binding_combined, width = 10, 
+       height = max(6, length(unique(minus_combined_reg_binding_matrix$V1)) * 0.15), 
+       dpi = 300, bg = "white")
+
+```
 
