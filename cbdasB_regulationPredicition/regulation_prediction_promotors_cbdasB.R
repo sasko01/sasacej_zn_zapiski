@@ -60,12 +60,12 @@ travisCBD1_reg <- minus_strand2('travisCBD1_cbdasB_reg.txt')
 
 travisCBD2_reg <- minus_strand2('travisCBD2_cbdasB_reg.txt')
 
-Ppepper <- minus_strand2('Ppepper_cbdasB_reg.txt') #dodaj (plantregmap not working)
+pPepper_reg <- minus_strand2('pPepper_cbdasB_reg.txt') 
 
 
 
 
-#Plus strand: Heatmap-----------------------------------------------------------------------------------------
+#Plus strand: Heatmap-------------------------------------------------------------------------------------
 
 
 
@@ -77,6 +77,7 @@ plus_reg_presence_matrix <-
   finola_reg %>% mutate(Cultivar = "finola"),
   PK_reg %>% mutate(Cultivar = "PKush"),
   JLdash_reg %>% mutate(Cultivar = "JLdash"),
+  JL5_reg %>% mutate(Cultivar = "JL5"),
   pBanana_reg %>% mutate(Cultivar = "Pbanana")) %>%
   distinct(Cultivar, V1) %>%
   mutate(value = 1) %>%
@@ -90,8 +91,8 @@ heatmap_plus_reg <-
   scale_fill_manual(values = c("0" = "white", "1" = "darkgreen")) +
   theme_minimal() +
   labs(fill = "Present", 
-       title = "Predicted Regulatory sites presence across different Cannabis S. cultivars (cbdas) - plus st.")
-  +theme(axis.text.y = element_text(size = 6, angle = 45, lineheight = 1.2),
+       title = "Predicted Regulatory sites presence across different Cannabis S. cultivars (cbdas) - plus st.") + 
+  theme(axis.text.y = element_text(size = 6, angle = 45, lineheight = 1.2),
         axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
 
 ggsave("heatmap_plus_reg.png", plot = heatmap_plus_reg, width = 8, 
@@ -102,7 +103,7 @@ ggsave("heatmap_plus_reg.png", plot = heatmap_plus_reg, width = 8,
 
 
 #Minus strand: Heatmap-----------------------------------------------------------------------------------------
-#Manjka pPepper!  
+ 
 
 minus_reg_presence_matrix <- 
   bind_rows(
@@ -114,10 +115,13 @@ minus_reg_presence_matrix <-
   hOG1_reg %>% mutate(Cultivar = "hOG1"),
   hOG2_reg %>% mutate(Cultivar = "hOG2"),
   JL_reg %>% mutate(Cultivar = "JL"),
+  JLfather_reg %>% mutate(Cultivar = "JLfather"),
+  JLmother_reg %>% mutate(Cultivar = "JLmother"),
   PR_reg %>% mutate(Cultivar = "PR"),
   SL1_reg %>% mutate(Cultivar = "SL1"),
   travisCBD1_reg %>% mutate(Cultivar = "t1"),
-  travisCBD2_reg %>% mutate(Cultivar = "t2")) %>% 
+  travisCBD2_reg %>% mutate(Cultivar = "t2"),
+  pPepper_reg %>% mutate(Cultivar = "pPepper")) %>% 
   distinct(Cultivar, V1) %>%
   mutate(value = 1) %>%
   pivot_wider(names_from = Cultivar, values_from = value, values_fill = 0) %>% 

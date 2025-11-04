@@ -163,26 +163,25 @@ ________________________________________________________________________________
 
 HEATMAP - Plus strand
 
-```{r}
 
-combined_plus <- bind_rows(
-  abacus %>% mutate(Plant = "abacus"),
-  SL2 %>% mutate(Plant = "SL2"),
-  finola %>% mutate(Plant = "finola"),
-  PKush %>% mutate(Plant = "PKush"),
-  JLdash %>% mutate(Plant = "JLdash"),
-  Pbanana %>% mutate(Plant = "Pbanana"),
-)
 
-```
+plus_prom_presence_matrix => tf binding sites dobljeni samo s promotorjem
+
 
 ```{r}
 
-plus_presence_matrix <- combined_plus %>%
-  distinct(Plant, V1) %>%
+plus_prom_presence_matrix <- bind_rows(
+  abacus_prom %>% mutate(Cultivar = "abacus"),
+  SL2_prom %>% mutate(Cultivar = "SL2"),
+  finola_prom %>% mutate(Cultivar = "finola"),
+  PKush_prom %>% mutate(Cultivar = "PKush"),
+  JLdash_prom %>% mutate(Cultivar = "JLdash"),
+  Pbanana_prom %>% mutate(Cultivar = "Pbanana")) %>%
+  distinct(Cultivar, V1) %>%
   mutate(value = 1) %>%
-  pivot_wider(names_from = Plant, values_from = value, values_fill = 0) %>% 
-  pivot_longer(-V1, names_to = "Plant", values_to = "Present")
+  pivot_wider(names_from = Cultivar, values_from = value, values_fill = 0) %>% 
+  pivot_longer(-V1, names_to = "Cultivar", values_to = "Present") %>% 
+  add_column(WholeGene = 0)
 
 ```
 
@@ -299,6 +298,36 @@ print(heatmap_plus_reg_binding_combined)
 
 ggsave("heatmap_plus_reg_binding_combined.png", plot = heatmap_plus_reg_binding_combined, width = 10, 
        height = max(6, length(unique(minus_combined_reg_binding_matrix$V1)) * 0.15), 
+       dpi = 300, bg = "white")
+
+```
+
+
+_________________________________________________________________________________________________________________
+
+RAZLIKE med TF binding sites predictions dobljeni samo s promotorjem/z genom+promotorjem: PLUS STRAND
+
+
+```{r}
+union(plus_prom_presence_matrix, plus_tfb_presence_matrix) %>%  head()
+```
+
+
+```{r}
+
+heatmap_plus_wholeG_prom <-
+  union(plus_prom_presence_matrix, plus_tfb_presence_matrix) %>% 
+  ggplot(., aes(x = Cultivar, y = V1, fill = factor(Present))) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("0" = "white", "1" = "darkgreen")) +
+  theme_minimal() +
+  labs(fill = "Present", 
+       title = "Difference between TF bind. sites: whole gene/promotor only - plus st.") + 
+  theme(axis.text.y = element_text(size = 6, angle = 45, lineheight = 1.2),
+        axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+
+ggsave("heatmap_plus_wholeG_prom.png", plot = heatmap_plus_wholeG_prom, width = 10, 
+       height = max(6, length(unique(heatmap_plus_wholeG_prom$V1)) * 0.15), 
        dpi = 300, bg = "white")
 
 ```
