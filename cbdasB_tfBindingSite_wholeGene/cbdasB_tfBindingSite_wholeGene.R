@@ -232,20 +232,79 @@ plus_tfb_family_matrix <-
   add_column(WholeGene = 1) %>% 
   pivot_longer(cols = abacus:Pbanana, names_to = "Cultivar", values_to = "Presence")
 
-ggplot(plus_tfb_family_matrix, aes(x = Cultivar, y = V1, fill = V2, alpha = Presence)) +
+
+(
+  ggplot(plus_tfb_family_matrix,
+       aes(x = Cultivar, y = V1, fill = V2, alpha = factor(Presence))) +
   geom_tile(color = "white") +
-  scale_alpha_manual(values = c("0" = 0.1, "1" = 1)) +  
-  scale_fill_brewer(palette = "Set3") +
+  scale_fill_viridis_d(option = "turbo") +
+  scale_alpha_manual(values = c("0" = 0, "1" = 1)) +
   theme_minimal(base_size = 10) +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
-    axis.text.y = element_text(size = 6),
+    axis.text.y = element_text(angle = 45, size = 6),
     panel.grid = element_blank()
   ) +
   labs(
     x = "Cultivar",
-    y = "Gene ID",
+    y = "Motif",
     fill = "Family",
-    alpha = "Presence"
+    alpha = "Presence",
+    title = "Predicted TFB sites & families presence across different Cannabis S. cultivars (cbdas, whole gene+promotor) - plus strand"
   )
+  ) %>% ggsave("heatmap_plus_tfb_family_wG.png", plot = ., width = 10, 
+           height = max(6, length(unique(plus_tfb_family_matrix$V1)) * 0.15), 
+           dpi = 300, bg = "white")
 
+
+
+#Minus strand: Heatmap - Gene Family + TFB sites---------------------------------------------------------------
+
+
+
+minus_tfb_family_matrix <- 
+  bind_rows(
+    anc1_tfb %>% mutate(Cultivar = "anc1"),
+    anc2_tfb %>% mutate(Cultivar = "anc2"),
+    cannatonic_tfb %>% mutate(Cultivar = "cannatonic"),
+    cannbio_tfb %>% mutate(Cultivar = "cannbio"),
+    CP_tfb %>% mutate(Cultivar = "CP"),
+    hOG1_tfb %>% mutate(Cultivar = "hOG1"),
+    hOG2_tfb %>% mutate(Cultivar = "hOG2"),
+    JL_tfb %>% mutate(Cultivar = "JL"),
+    JLfather_tfb %>% mutate(Cultivar = "JLfather"),
+    JLmother_tfb %>% mutate(Cultivar = "JLmother"),
+    PR_tfb %>% mutate(Cultivar = "PR"),
+    SL1_tfb %>% mutate(Cultivar = "SL1"),
+    travisCBD1_tfb %>% mutate(Cultivar = "t1"),
+    travisCBD2_tfb %>% mutate(Cultivar = "t2"),
+    pPepper_tfb %>% mutate(Cultivar = "pPepper")) %>% 
+  distinct(Cultivar, V1, V2) %>%
+  mutate(value = 1) %>%
+  pivot_wider(names_from = Cultivar, values_from = value, values_fill = 0) %>% 
+  add_column(WholeGene = 1) %>% 
+  pivot_longer(cols = anc1:pPepper, names_to = "Cultivar", values_to = "Presence")
+
+
+(
+  ggplot(minus_tfb_family_matrix,
+         aes(x = Cultivar, y = V1, fill = V2, alpha = factor(Presence))) +
+    geom_tile(color = "white") +
+    scale_fill_viridis_d(option = "turbo") +
+    scale_alpha_manual(values = c("0" = 0, "1" = 1)) +
+    theme_minimal(base_size = 10) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      axis.text.y = element_text(angle = 45, size = 6),
+      panel.grid = element_blank()
+    ) +
+    labs(
+      x = "Cultivar",
+      y = "Motif",
+      fill = "Family",
+      alpha = "Presence",
+      title = "Predicted TFB sites & families presence across different Cannabis S. cultivars (cbdas, whole gene+promotor) - minus strand"
+    )
+) %>% ggsave("heatmap_minus_tfb_family_wG.png", plot = ., width = 10, 
+             height = max(6, length(unique(minus_tfb_family_matrix$V1)) * 0.15), 
+             dpi = 300, bg = "white")
