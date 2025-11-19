@@ -233,6 +233,9 @@ plus_tfb_family_matrix <-
   pivot_longer(cols = abacus:Pbanana, names_to = "Cultivar", values_to = "Presence")
 
 
+plus_families_count <- plus_tfb_family_matrix %>% group_by(.$V2) %>% count(.) 
+
+
 (
   ggplot(plus_tfb_family_matrix,
        aes(x = Cultivar, y = V1, fill = V2, alpha = factor(Presence))) +
@@ -252,7 +255,7 @@ plus_tfb_family_matrix <-
     alpha = "Presence",
     title = "Predicted TFB sites & families presence across different Cannabis S. cultivars (cbdas, whole gene+promotor) - plus strand"
   )
-  ) %>% ggsave("heatmap_plus_tfb_family_wG.png", plot = ., width = 10, 
+) %>% ggsave("heatmap_plus_tfb_family_wG.png", plot = ., width = 10, 
            height = max(6, length(unique(plus_tfb_family_matrix$V1)) * 0.15), 
            dpi = 300, bg = "white")
 
@@ -286,6 +289,9 @@ minus_tfb_family_matrix <-
   pivot_longer(cols = anc1:pPepper, names_to = "Cultivar", values_to = "Presence")
 
 
+minus_families_count <- minus_tfb_family_matrix %>% group_by(.$V2) %>% count(.)
+
+
 (
   ggplot(minus_tfb_family_matrix,
          aes(x = Cultivar, y = V1, fill = V2, alpha = factor(Presence))) +
@@ -308,3 +314,9 @@ minus_tfb_family_matrix <-
 ) %>% ggsave("heatmap_minus_tfb_family_wG.png", plot = ., width = 10, 
              height = max(6, length(unique(minus_tfb_family_matrix$V1)) * 0.15), 
              dpi = 300, bg = "white")
+
+
+
+
+
+
