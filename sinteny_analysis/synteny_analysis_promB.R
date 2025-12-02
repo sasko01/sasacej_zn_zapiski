@@ -1,6 +1,8 @@
 setwd("C:/Users/scej4/OneDrive/Desktop/diplomska_koda/sinteny_analysis")
 library(tidyverse)
 library(ggplot2)
+library(GenomicRanges)
+library(dplyr)
 
 
 
@@ -47,6 +49,8 @@ all_cultivars <- bind_rows(
 ) %>% mutate(direction = ifelse(strand == "+", 1, -1))
 
 
+names(all_cultivars)[names(all_cultivars) == "matched sequence"] <- "matched_sequence"
+names(all_cultivars)[names(all_cultivars) == "sequence name"] <- "sequence_name"
 
 #Synteny plot poskus___________________________________________________________________________________________
 
@@ -79,3 +83,65 @@ ggplot(all_cultivars,
                 width = 12, height = 10, dpi = 300,
                 bg = "white")
 
+
+(
+  ggplot(all_cultivars,
+         aes(x = start, xend = stop,
+             y = Cultivar, yend = Cultivar,
+             color = motif)) +
+    geom_segment(
+      size = 5,
+      arrow = arrow(
+        length = unit(0.15, "cm"),
+        type = "closed",
+        ends = "last"
+      )
+    ) +
+    scale_color_viridis_d(option = "turbo") +
+    theme_minimal(base_size = 13) +
+    theme(
+      panel.grid = element_blank(),
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    ) +
+    labs(
+      title = "Promoter TFBS Synteny Map — CBDA-synthase",
+      x = "Promoter Position (bp)",
+      y = "Cultivar",
+      color = "TF Motif"
+    )
+) %>%  ggsave("synteny_motifs.png", plot = .,
+              width = 25, height = 15, dpi = 300,
+              bg = "white")
+
+
+#With GenomicRanges______________________________________________________________________________________
+
+
+gr_cultivars <- with(all_cultivars,
+                     GRanges(
+                       seqnames = Cultivar,       
+                       ranges   = IRanges(start, stop),
+                       strand   = ifelse(direction == 1, "+", "-"),
+                       motif    = motif,
+                       family   = Family,
+                       matched  = matched_sequence
+                     ))
+
+
+gr <- GRanges(
+  seqnames = all_cultivars$Cultivar,       
+  ranges = IRanges(start = all_cultivars$start, end = all_cultivars$stop),
+  strand = all_cultivars$strand,
+  Family = all_cultivars$Family,
+  motif = all_cultivars$motif
+)
+
+
+
+
+
+#_______________________________________________________________________________________________________
+
+library(rtracklayer)
+
+export.bed(gr_cultivars, "cultivar_TFBS.bed")
