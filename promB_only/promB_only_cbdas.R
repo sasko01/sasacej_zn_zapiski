@@ -33,8 +33,6 @@ Pbanana_promB <- plus_strand('Pbanana_promB_tfb.txt')
 
 PK_promB <- plus_strand('PK_promB_tfb.txt')
 
-SL2_promB <- plus_strand('SL2_promB_tfb.txt')
-
 anc1_promB <- plus_strand('anc1_promB_tfb.txt')
 
 anc2_promB <- plus_strand('anc2_promB_tfb.txt')
