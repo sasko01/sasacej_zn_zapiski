@@ -91,7 +91,7 @@ heatmap_plus_reg <-
   scale_fill_manual(values = c("0" = "white", "1" = "darkgreen")) +
   theme_minimal() +
   labs(fill = "Present", 
-       title = "Predicted Regulatory sites presence across different Cannabis S. cultivars (cbdas) - plus st.") + 
+       title = "Predicted Regulatory sites presence across different Cannabis S. cultivars (cbdas promotor region) - plus st.") + 
   theme(axis.text.y = element_text(size = 6, angle = 45, lineheight = 1.2),
         axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
 
