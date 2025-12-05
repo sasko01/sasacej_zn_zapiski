@@ -3,6 +3,7 @@ library(tidyverse)
 library(ggplot2)
 library(GenomicRanges)
 library(dplyr)
+library(gggenomes)
 
 
 
@@ -52,21 +53,29 @@ all_cultivars <- bind_rows(
 names(all_cultivars)[names(all_cultivars) == "matched sequence"] <- "matched_sequence"
 names(all_cultivars)[names(all_cultivars) == "sequence name"] <- "sequence_name"
 
+family_count <- all_cultivars %>% group_by(.$Family) %>% count(.)
+motif_count <- all_cultivars %>% select(.$motif) %>% group_by(.$motif) %>% count(.)
+
+all_cultivars %>% group_by(.$Cultivar) %>% count(.)
+
 #Synteny plot poskus___________________________________________________________________________________________
 
 (
-ggplot(all_cultivars,
-       aes(x = start, xend = stop,
+  all_cultivars %>%
+    mutate(
+      x_start = start,
+      x_end   = ifelse(direction == 1, stop, start - (stop - start))
+    ) %>% 
+ggplot(.,
+       aes(x = x_start, xend = x_end,
            y = Cultivar, yend = Cultivar,
            color = Family)) +
-  geom_segment(
-    size = 5,
-    arrow = arrow(
-      length = unit(0.15, "cm"),
-      type = "closed",
-      ends = "last"
-    )
-  ) +
+  geom_segment(size = 5,
+               arrow = arrow(
+                 length = unit(0.15, "cm"),
+                 type = "closed",
+                 ends = "last"
+               )) +
   scale_color_viridis_d(option = "turbo") +
   theme_minimal(base_size = 13) +
   theme(
@@ -79,8 +88,8 @@ ggplot(all_cultivars,
     y = "Cultivar",
     color = "TF Family"
   )
-) %>%  ggsave("synteny.png", plot = .,
-                width = 12, height = 10, dpi = 300,
+) %>%  ggsave("synteny_family.png", plot = .,
+                width = 30, height = 10, dpi = 300,
                 bg = "white")
 
 
@@ -114,7 +123,9 @@ ggplot(all_cultivars,
               bg = "white")
 
 
-#With GenomicRanges______________________________________________________________________________________
+
+
+#With GenomicRanges & gggenomes_____________________________________________________________________________
 
 
 gr_cultivars <- with(all_cultivars,
@@ -133,13 +144,61 @@ gr <- GRanges(
   ranges = IRanges(start = all_cultivars$start, end = all_cultivars$stop),
   strand = all_cultivars$strand,
   Family = all_cultivars$Family,
-  motif = all_cultivars$motif
-)
+  motif = all_cultivars$motif)
 
 
+df <- all_cultivars %>% 
+  mutate(
+    Cultivar = as.character(Cultivar),
+    start = as.integer(start),
+    stop = as.integer(stop),
+    strand = ifelse(direction == 1, "+", "-"))
+
+genomes <- df %>%
+  group_by(Cultivar) %>%
+  summarise(length = max(stop))
+
+names(genomes)[names(genomes) == "Cultivar"] <- "seq_id"
 
 
+features <- df %>%
+  transmute(
+    genome = Cultivar,
+    start = start,
+    end   = stop,
+    strand = strand,
+    family = Family,
+    motif = motif
+  )
 
+names(features)[names(features) == "genome"] <- "seq_id"
+names(features)[names(features) == "family"] <- "Family"
+
+gggenomes(seqs = genomes, feats = features) +
+  geom_seq() +
+  geom_feat(aes(fill = family), size = 2) +
+  geom_link(aes(color = motif), alpha = 0.4) +
+  theme_genomes() +
+  labs(title = "Conserved motifs with synteny links across genomes")
+
+
+p <- gggenomes(seqs = genomes, feats = features) +
+  geom_gene() +
+  geom_feat(
+    aes(fill = Family, forward = strand == "+"),
+    arrow = arrow(length = unit(0.15, "cm"))
+  ) +
+  scale_fill_viridis_d(option = "turbo") +
+  theme_minimal(base_size = 14) +
+  theme(panel.grid = element_blank()) +
+  labs(
+    title = "TFBS Conservation Map Across Cannabis Cultivars",
+    x = "Promoter Position (bp)",
+    y = "Cultivar",
+    fill = "TF Family"
+  )
+
+p
 #_______________________________________________________________________________________________________
 
 library(rtracklayer)
